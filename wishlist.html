@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Wishlist | HandSkill</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #fffaf5; }
+        .product-card:hover { transform: translateY(-5px); }
+    </style>
+</head>
+<body>
+
+    <nav class="bg-white shadow-sm sticky top-0 z-50 px-6 py-4 flex items-center justify-between">
+        <div class="text-2xl font-bold cursor-pointer" onclick="window.location.href='index.html'" style="font-family: 'Playfair Display';">
+            HandSkill<span class="text-amber-600">.</span>
+        </div>
+        <div class="flex items-center gap-6">
+            <a href="products.html" class="text-sm font-medium text-gray-600 hover:text-amber-600 transition-colors">Collection</a>
+            <a href="cart.html" class="text-gray-600 hover:text-amber-600">
+                <i class="fas fa-shopping-basket text-xl"></i>
+            </a>
+        </div>
+    </nav>
+
+    <main class="max-w-7xl mx-auto px-6 py-12">
+        <div class="flex items-center justify-between mb-10">
+            <h1 class="text-4xl font-bold text-gray-900" style="font-family: 'Playfair Display';">My Wishlist ❤️</h1>
+            <p id="item-count" class="text-gray-500 font-medium"></p>
+        </div>
+
+        <!-- Empty State -->
+        <div id="empty-wishlist" class="hidden text-center py-20 bg-white rounded-[40px] shadow-sm border border-orange-50">
+            <i class="fas fa-heart text-6xl text-gray-200 mb-6"></i>
+            <h2 class="text-2xl font-bold text-gray-800 mb-2">Your wishlist is empty</h2>
+            <p class="text-gray-500 mb-8">Save items you love to find them easily later.</p>
+            <a href="products.html" class="bg-black text-white px-8 py-3 rounded-xl font-bold hover:bg-gray-800 transition-all">Explore Products</a>
+        </div>
+
+        <div id="wishlist-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+            <!-- Items will be injected here -->
+        </div>
+    </main>
+
+    <script>
+        function loadWishlist() {
+            const wishlist = JSON.parse(localStorage.getItem('handskill_wishlist')) || [];
+            const grid = document.getElementById('wishlist-grid');
+            const emptyState = document.getElementById('empty-wishlist');
+            const countText = document.getElementById('item-count');
+
+            if (wishlist.length === 0) {
+                grid.classList.add('hidden');
+                emptyState.classList.remove('hidden');
+                countText.innerText = "0 Items";
+                return;
+            }
+
+            grid.classList.remove('hidden');
+            emptyState.classList.add('hidden');
+            countText.innerText = `${wishlist.length} Items Saved`;
+
+            grid.innerHTML = wishlist.map((item, index) => `
+                <div class="product-card bg-white rounded-3xl overflow-hidden shadow-sm border border-gray-50 transition-all duration-300 flex flex-col">
+                    <div class="relative aspect-square overflow-hidden group">
+                        <img src="${item.img}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
+                             onerror="this.src='https://placehold.co/400x400?text=HandSkill'">
+                        <button onclick="removeFromWishlist(${item.id})" class="absolute top-3 right-3 bg-white/90 p-2 rounded-full text-red-500 shadow-md hover:bg-white transition-all">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
+                    </div>
+                    <div class="p-5 flex-1 flex flex-col">
+                        <h3 class="font-bold text-gray-800 text-lg mb-1">${item.name}</h3>
+                        <p class="text-amber-600 font-bold text-xl mb-4">₹${item.price}</p>
+                        <div class="mt-auto space-y-2">
+                            <button onclick="moveToCart(${index})" class="w-full bg-black text-white py-3 rounded-xl hover:bg-gray-800 transition-colors text-sm font-bold flex items-center justify-center gap-2">
+                                <i class="fas fa-shopping-basket"></i> Move to Basket
+                            </button>
+                            <button onclick="window.location.href='product-view.html?id=${item.id}'" class="w-full border border-gray-200 text-gray-600 py-2 rounded-xl hover:bg-gray-50 transition-colors text-xs font-medium">
+                                View Details
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function removeFromWishlist(id) {
+            let wishlist = JSON.parse(localStorage.getItem('handskill_wishlist')) || [];
+            wishlist = wishlist.filter(item => item.id !== id);
+            localStorage.setItem('handskill_wishlist', JSON.stringify(wishlist));
+            loadWishlist(); // Refresh grid
+        }
+
+        function moveToCart(index) {
+            let wishlist = JSON.parse(localStorage.getItem('handskill_wishlist')) || [];
+            let cart = JSON.parse(localStorage.getItem('handskill_cart')) || [];
+            
+            const item = wishlist[index];
+            cart.push(item);
+            
+            localStorage.setItem('handskill_cart', JSON.stringify(cart));
+            
+            // Optional: Remove from wishlist after moving to cart
+            // wishlist.splice(index, 1);
+            // localStorage.setItem('handskill_wishlist', JSON.stringify(wishlist));
+            
+            alert(`${item.name} added to basket! ✨`);
+            loadWishlist();
+        }
+
+        window.onload = loadWishlist;
+    </script>
+</body>
+</html>

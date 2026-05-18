@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Details | HandSkill</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #fffaf5; }
+        .thumb-active { border: 2px solid #d4a373; opacity: 1; }
+        .thumb { opacity: 0.6; transition: 0.3s; cursor: pointer; }
+        .thumb:hover { opacity: 1; }
+        .wishlist-active { color: #ef4444 !important; transform: scale(1.2); }
+        .btn-animate { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        .btn-animate:active { transform: scale(0.95); }
+    </style>
+</head>
+<body>
+
+    <nav class="bg-white shadow-sm sticky top-0 z-50 px-6 py-4 flex items-center justify-between">
+        <div class="text-2xl font-bold cursor-pointer" onclick="window.location.href='index.html'" style="font-family: 'Playfair Display';">
+            HandSkill<span class="text-amber-600">.</span>
+        </div>
+        <div class="flex items-center gap-6">
+            <a href="products.html" class="hidden md:block text-sm font-medium text-gray-600 hover:text-amber-600 transition-colors">
+                <i class="fas fa-arrow-left mr-2"></i> Back to Collection
+            </a>
+            <div class="flex gap-4">
+                <a href="wishlist.html" class="text-gray-600 hover:text-red-500 relative">
+                    <i class="fas fa-heart text-xl"></i>
+                </a>
+                <a href="cart.html" class="text-gray-600 hover:text-amber-600">
+                    <i class="fas fa-shopping-basket text-xl"></i>
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-7xl mx-auto px-4 md:px-10 py-10">
+        <div class="flex flex-col lg:flex-row gap-12 bg-white p-6 md:p-10 rounded-[40px] shadow-sm border border-orange-50 relative">
+            
+            <!-- Left Side: Image Gallery -->
+            <div class="flex-1 relative">
+                <!-- Wishlist Heart Button on Image -->
+                <button onclick="toggleWishlist()" id="wishBtn" class="absolute top-4 right-4 z-10 bg-white/80 backdrop-blur-md p-3 rounded-full shadow-lg hover:bg-white transition-all text-gray-400">
+                    <i class="fas fa-heart text-2xl"></i>
+                </button>
+
+                <div class="w-full aspect-square rounded-3xl overflow-hidden bg-gray-50 mb-6 border border-gray-100">
+                    <img id="mainDisplay" src="" class="w-full h-full object-cover transition-all duration-500">
+                </div>
+                <div id="thumbGroup" class="flex gap-4 overflow-x-auto pb-2 scrollbar-hide">
+                    <!-- Thumbnails will be injected here -->
+                </div>
+            </div>
+
+            <div class="flex-1 space-y-8">
+                <div>
+                    <div class="flex items-center justify-between">
+                        <span id="pTag" class="bg-amber-100 text-amber-700 px-3 py-1 rounded-full text-xs font-bold tracking-widest uppercase mb-4 inline-block"></span>
+                    </div>
+                    <h1 id="pName" class="text-4xl md:text-5xl font-bold text-gray-900 leading-tight mb-2" style="font-family: 'Playfair Display';"></h1>
+                    <div class="flex items-center gap-4 mt-4">
+                        <div class="text-3xl font-bold text-amber-600" id="pPrice"></div>
+                        <span class="text-gray-400 line-through text-lg">₹2500</span>
+                        <span class="text-green-600 font-semibold text-sm bg-green-50 px-2 py-1 rounded">Save 40% OFF</span>
+                    </div>
+                </div>
+
+                <div class="space-y-4 border-t border-gray-100 pt-6">
+                    <h3 class="font-semibold text-gray-800 flex items-center gap-2">
+                        <i class="fas fa-info-circle text-amber-600"></i> Description
+                    </h3>
+                    <p id="pLongDesc" class="text-gray-600 leading-relaxed text-lg"></p>
+                </div>
+
+                <div class="space-y-6 pt-6">
+                    <div class="flex flex-col sm:flex-row gap-4">
+                        <button onclick="addToBasket()" id="cartBtn" class="flex-1 btn-animate bg-black text-white py-5 rounded-2xl font-bold hover:bg-gray-800 flex items-center justify-center gap-2 shadow-xl shadow-gray-200">
+                            <i class="fas fa-shopping-basket"></i> Add to Basket
+                        </button>
+                        <button onclick="buyNow()" class="flex-1 btn-animate border-2 border-black text-black py-5 rounded-2xl font-bold hover:bg-black hover:text-white flex items-center justify-center gap-2">
+                            <i class="fas fa-bolt"></i> Buy Now
+                        </button>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4 pt-4">
+                        <div class="flex items-center gap-3 p-4 bg-orange-50/50 rounded-2xl border border-orange-100">
+                            <i class="fas fa-truck text-amber-600"></i>
+                            <span class="text-xs font-medium text-gray-700">Fast Delivery Lucknow</span>
+                        </div>
+                        <div class="flex items-center gap-3 p-4 bg-orange-50/50 rounded-2xl border border-orange-100">
+                            <i class="fas fa-gift text-amber-600"></i>
+                            <span class="text-xs font-medium text-gray-700">Custom Packaging</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <section class="mt-24">
+            <div class="flex items-center justify-between mb-10">
+                <h3 class="text-3xl font-bold text-gray-900" style="font-family: 'Playfair Display';">Recommended For You</h3>
+                <a href="products.html" class="text-amber-600 font-semibold hover:underline">See All</a>
+            </div>
+            <div id="related-grid" class="grid grid-cols-2 md:grid-cols-4 gap-8">
+                <!-- Related products will appear here -->
+            </div>
+        </section>
+    </main>
+
+    <script>
+        const products = [
+            { id: 0, name: "Customise Sketch", price: 1000, tag: "Popular", imgs: ["images/sketch.jpeg"], desc: "High-grade graphite on premium ivory paper. Perfect for portraits." },
+            { id: 1, name: "Hamper Box", price: 800, tag: "Trending", imgs: ["images/hamper.jpeg"], desc: "Curated snacks and small gifts in an aesthetic box." },
+            { id: 2, name: "Photo Frame", price: 600, tag: "Customised", imgs: ["images/photoframe.jpeg"], desc: "Wooden frame with non-reflective glass." },
+            { id: 3, name: "Customise board", price: 2100, tag: "Handmade", imgs: ["images/board.jpeg"], desc: "Aesthetic hand-painted boards for decor." },
+            { id: 4, name: "Handmade cards", price: 300, tag: "Custom", imgs: ["images/card.jpeg"], desc: "Intricate 3D pop-up designs for every occasion." }
+        ];
+
+        const params = new URLSearchParams(window.location.search);
+        const pid = parseInt(params.get('id')) || 0;
+        const currentItem = products.find(p => p.id === pid) || products[0];
+
+        function initPage() {
+            document.getElementById('pName').innerText = currentItem.name;
+            document.getElementById('pPrice').innerText = "₹" + currentItem.price;
+            document.getElementById('pLongDesc').innerText = currentItem.desc;
+            document.getElementById('pTag').innerText = currentItem.tag;
+            
+            const mainDisplay = document.getElementById('mainDisplay');
+            mainDisplay.src = currentItem.imgs[0];
+            mainDisplay.onerror = () => { mainDisplay.src = 'https://placehold.co/600x600/fef3c7/92400e?text=' + currentItem.name; };
+
+            checkWishlistStatus();
+
+            const thumbGroup = document.getElementById('thumbGroup');
+            currentItem.imgs.forEach((src, index) => {
+                const img = document.createElement('img');
+                img.src = src;
+                img.className = `thumb w-20 h-20 rounded-xl object-cover ${index === 0 ? 'thumb-active' : ''}`;
+                img.onclick = () => {
+                    mainDisplay.src = src;
+                    document.querySelectorAll('.thumb').forEach(t => t.classList.remove('thumb-active'));
+                    img.classList.add('thumb-active');
+                };
+                thumbGroup.appendChild(img);
+            });
+
+            const relatedGrid = document.getElementById('related-grid');
+            const related = products.filter(p => p.id !== pid).sort(() => 0.5 - Math.random()).slice(0, 4);
+            relatedGrid.innerHTML = related.map(p => `
+                <div class="bg-white p-4 rounded-3xl shadow-sm hover:shadow-xl transition-all cursor-pointer group border border-gray-50" 
+                     onclick="window.location.href='product-view.html?id=${p.id}'">
+                    <div class="overflow-hidden rounded-2xl mb-4 aspect-square">
+                        <img src="${p.imgs[0]}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                    </div>
+                    <h5 class="font-bold text-gray-800 mb-1">${p.name}</h5>
+                    <p class="text-amber-600 font-bold">₹${p.price}</p>
+                </div>
+            `).join('');
+        }
+
+        // Logic for Add to Basket
+        function addToBasket() {
+            let cart = JSON.parse(localStorage.getItem('handskill_cart')) || [];
+            cart.push({id: currentItem.id, name: currentItem.name, price: currentItem.price, img: currentItem.imgs[0]});
+            localStorage.setItem('handskill_cart', JSON.stringify(cart));
+            
+            const btn = document.getElementById('cartBtn');
+            const originalContent = btn.innerHTML;
+            btn.innerHTML = "<i class='fas fa-check'></i> Added to Basket!";
+            btn.style.backgroundColor = "#059669";
+            setTimeout(() => {
+                btn.innerHTML = originalContent;
+                btn.style.backgroundColor = "black";
+            }, 2000);
+        }
+
+        // Logic for Buy Now (Adds and Redirects)
+        function buyNow() {
+            let cart = JSON.parse(localStorage.getItem('handskill_cart')) || [];
+            cart.push({id: currentItem.id, name: currentItem.name, price: currentItem.price, img: currentItem.imgs[0]});
+            localStorage.setItem('handskill_cart', JSON.stringify(cart));
+            window.location.href = 'cart.html';
+        }
+
+        // Logic for Wishlist
+        function toggleWishlist() {
+            let wishlist = JSON.parse(localStorage.getItem('handskill_wishlist')) || [];
+            const index = wishlist.findIndex(item => item.id === currentItem.id);
+            
+            if (index === -1) {
+                wishlist.push({id: currentItem.id, name: currentItem.name, price: currentItem.price, img: currentItem.imgs[0]});
+                document.getElementById('wishBtn').classList.add('wishlist-active');
+            } else {
+                wishlist.splice(index, 1);
+                document.getElementById('wishBtn').classList.remove('wishlist-active');
+            }
+            localStorage.setItem('handskill_wishlist', JSON.stringify(wishlist));
+        }
+
+        function checkWishlistStatus() {
+            let wishlist = JSON.parse(localStorage.getItem('handskill_wishlist')) || [];
+            if (wishlist.some(item => item.id === currentItem.id)) {
+                document.getElementById('wishBtn').classList.add('wishlist-active');
+            }
+        }
+
+        window.onload = initPage;
+    </script>
+</body>
+</html>

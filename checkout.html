@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secure Checkout | HandSkill</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #fffaf5; color: #4a3f35; overflow-x: hidden; }
+        .playfair { font-family: 'Playfair Display', serif; }
+        .payment-option { transition: all 0.3s ease; border: 2px solid transparent; }
+        .payment-option.active { border-color: #d4a373; background-color: #fffdfa; }
+        .hidden-content { display: none; }
+        .hidden-content.show { display: block; }
+        input:focus, textarea:focus { border-color: #d4a373 !important; outline: none; ring: 0; }
+        .btn-handskill { background: #d4a373; transition: all 0.3s; }
+        .btn-handskill:hover { background: #b88a5d; transform: translateY(-1px); }
+        
+        #success-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: white;
+            z-index: 1000;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+        .check-container {
+            width: 100px; height: 100px;
+            background: #059669;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            animation: popIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            margin-bottom: 20px;
+        }
+        @keyframes popIn {
+            0% { transform: scale(0); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+    </style>
+</head>
+<body class="pb-10">
+
+    <nav class="bg-white/80 backdrop-blur-md sticky top-0 z-50 px-6 py-4 shadow-sm flex items-center justify-between">
+        <div class="text-2xl font-bold playfair cursor-pointer" onclick="window.location.href='index.html'">
+            HandSkill<span class="text-amber-600">.</span>
+        </div>
+        <div class="text-sm font-medium text-gray-500 uppercase tracking-widest">Secure Checkout</div>
+    </nav>
+
+    <main class="max-w-6xl mx-auto px-4 py-8 flex flex-col lg:flex-row gap-8">
+        
+        <div class="flex-1 space-y-6">
+            <div class="bg-white rounded-[30px] p-6 shadow-sm border border-orange-50">
+                <h2 class="text-xl font-bold mb-6 flex items-center gap-3 playfair">
+                    <span class="bg-amber-100 text-amber-700 w-8 h-8 rounded-full flex items-center justify-center text-sm">1</span>
+                    Delivery Information
+                </h2>
+                <form id="orderForm" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="md:col-span-2">
+                        <label class="text-xs font-bold text-gray-400 uppercase ml-2">Full Name</label>
+                        <input type="text" id="custName" required placeholder="Enter your name" class="w-full p-4 rounded-2xl bg-gray-50 border-none mt-1">
+                    </div>
+                    <div>
+                        <label class="text-xs font-bold text-gray-400 uppercase ml-2">Phone Number</label>
+                        <input type="tel" id="custPhone" required placeholder="10-digit number" class="w-full p-4 rounded-2xl bg-gray-50 border-none mt-1">
+                    </div>
+                    <div>
+                        <label class="text-xs font-bold text-gray-400 uppercase ml-2">City (Lucknow = Free Delivery)</label>
+                        <input type="text" id="custCity" required oninput="calculateDelivery()" placeholder="e.g. Lucknow" class="w-full p-4 rounded-2xl bg-gray-50 border-none mt-1">
+                    </div>
+                    <div class="md:col-span-2">
+                        <label class="text-xs font-bold text-gray-400 uppercase ml-2">Full Address & Pincode</label>
+                        <textarea id="custAddress" required rows="3" placeholder="House No, Colony, Pincode" class="w-full p-4 rounded-2xl bg-gray-50 border-none mt-1"></textarea>
+                    </div>
+                </form>
+            </div>
+
+            <div class="bg-white rounded-[30px] p-6 shadow-sm border border-orange-50">
+                <h2 class="text-xl font-bold mb-6 flex items-center gap-3 playfair">
+                    <span class="bg-amber-100 text-amber-700 w-8 h-8 rounded-full flex items-center justify-center text-sm">2</span>
+                    Payment Method
+                </h2>
+
+                <div class="space-y-3">
+                    <!-- Online Payment Option -->
+                    <div id="opt-online" onclick="selectPayment('online')" class="payment-option p-5 rounded-2xl cursor-pointer bg-gray-50">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-4">
+                                <div class="w-6 h-6 rounded-full border-2 border-amber-600 flex items-center justify-center">
+                                    <div id="dot-online" class="w-3 h-3 rounded-full bg-amber-600 hidden"></div>
+                                </div>
+                                <div>
+                                    <p class="font-bold">Online Payment (UPI / QR)</p>
+                                    <p class="text-xs text-gray-500 italic">Get instant confirmation</p>
+                                </div>
+                            </div>
+                            <div class="flex gap-2 opacity-60">
+                                <i class="fab fa-google-pay text-2xl"></i>
+                                <i class="fas fa-qrcode text-xl"></i>
+                            </div>
+                        </div>
+
+                        <div id="qr-content" class="hidden-content pt-6 mt-4 border-t border-gray-100 text-center">
+                            <button onclick="payViaApp()" class="w-full bg-blue-600 text-white py-4 rounded-2xl font-bold mb-4 flex items-center justify-center gap-2 shadow-lg active:scale-95 transition-transform">
+                                <i class="fas fa-mobile-alt"></i> Pay using UPI App
+                            </button>
+                            
+                            <p class="text-xs text-gray-400 mb-4">— OR SCAN QR —</p>
+                            <div class="inline-block bg-white p-3 rounded-3xl shadow-md border border-orange-100 mb-4">
+                                <img src="images/paytm.jpeg" class="w-40 h-40 rounded-xl mx-auto" alt="Payment QR" onerror="this.src='https://placehold.co/160x160?text=Scan+To+Pay'">
+                            </div>
+                            <div class="bg-amber-50 p-3 rounded-xl inline-block w-full max-w-xs mb-4">
+                                <p class="text-xs text-amber-800 font-bold uppercase tracking-widest">UPI ID</p>
+                                <p class="text-lg font-bold text-amber-900">9569806511@ptaxis</p>
+                            </div>
+
+                            <label class="flex items-center justify-center gap-3 p-3 bg-white rounded-xl border border-dashed border-amber-300 cursor-pointer">
+                                <input type="checkbox" id="paymentDone" class="w-5 h-5 accent-amber-600">
+                                <span class="text-sm font-semibold text-gray-700">I have completed the payment</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- COD Option -->
+                    <div id="opt-cod" onclick="selectPayment('cod')" class="payment-option p-5 rounded-2xl cursor-pointer bg-gray-50">
+                        <div class="flex items-center gap-4">
+                            <div class="w-6 h-6 rounded-full border-2 border-amber-600 flex items-center justify-center">
+                                <div id="dot-cod" class="w-3 h-3 rounded-full bg-amber-600 hidden"></div>
+                            </div>
+                            <div>
+                                <p class="font-bold">Cash on Delivery</p>
+                                <p class="text-xs text-gray-500 italic">Pay when it arrives</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <button onclick="processOrder()" class="w-full btn-handskill text-white py-5 rounded-[25px] font-bold text-xl shadow-xl shadow-amber-100 flex items-center justify-center gap-3">
+                Complete Order <i class="fas fa-check-circle"></i>
+            </button>
+        </div>
+
+        <aside class="w-full lg:w-[380px] space-y-6">
+            <div class="bg-white rounded-[30px] p-8 shadow-sm border border-orange-50 sticky top-28">
+                <h3 class="text-2xl font-bold playfair mb-6">Order Summary</h3>
+                <div id="summary-items" class="space-y-4 max-h-[40vh] overflow-y-auto mb-6 pr-2"></div>
+                
+                <div class="border-t border-dashed border-orange-100 pt-6 space-y-3">
+                    <div class="flex justify-between text-gray-500">
+                        <span>Items Total</span>
+                        <span id="sub-total">₹0</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-gray-500">Delivery</span>
+                        <span id="delivery-cost" class="text-green-600 font-bold">FREE</span>
+                    </div>
+                    <div class="flex justify-between text-2xl font-bold text-gray-900 pt-2 border-t border-gray-50">
+                        <span>Total Payable</span>
+                        <span id="final-total" class="text-amber-600">₹0</span>
+                    </div>
+                </div>
+            </div>
+        </aside>
+    </main>
+
+    <!-- Success Overlay -->
+    <div id="success-overlay">
+        <div class="check-container">
+            <i class="fas fa-check text-white text-5xl"></i>
+        </div>
+        <h1 class="text-4xl font-bold playfair text-gray-900 mb-2">Order Confirmed!</h1>
+        <p class="text-gray-500 text-lg px-8">We're redirecting you to WhatsApp for the final confirmation.</p>
+        <div class="mt-8 bg-orange-50 p-4 rounded-2xl">
+            <p class="text-xs font-bold uppercase text-amber-700 tracking-widest">Order ID</p>
+            <p id="order-id-display" class="text-2xl font-bold text-gray-900">#HS123456</p>
+        </div>
+        <p id="timer-text" class="mt-10 text-sm text-gray-400 italic">Opening WhatsApp in 3s...</p>
+    </div>
+
+    <!-- Custom Message Box for Errors -->
+    <div id="custom-alert" class="hidden fixed bottom-10 left-1/2 -translate-x-1/2 bg-gray-900 text-white px-6 py-4 rounded-2xl shadow-2xl z-[2000] flex items-center gap-3">
+        <i class="fas fa-exclamation-circle text-amber-400"></i>
+        <span id="alert-text"></span>
+    </div>
+
+    <script>
+        let selectedMode = "";
+        let itemsTotal = 0;
+        let deliveryCharge = 0;
+        let upiID = "9569806511@ptaxis";
+
+        function showAlert(msg) {
+            const alertBox = document.getElementById('custom-alert');
+            document.getElementById('alert-text').innerText = msg;
+            alertBox.classList.remove('hidden');
+            setTimeout(() => alertBox.classList.add('hidden'), 3000);
+        }
+
+        function calculateDelivery() {
+            const city = document.getElementById('custCity').value.trim().toLowerCase();
+            const deliveryDisplay = document.getElementById('delivery-cost');
+            
+            if (city === "lucknow" || city === "lko") {
+                deliveryCharge = 0;
+                deliveryDisplay.innerText = "FREE";
+                deliveryDisplay.className = "text-green-600 font-bold";
+            } else if (city === "") {
+                deliveryCharge = 0;
+                deliveryDisplay.innerText = "—";
+            } else {
+                deliveryCharge = 99;
+                deliveryDisplay.innerText = "₹99";
+                deliveryDisplay.className = "text-red-500 font-bold";
+            }
+            updateTotal();
+        }
+
+        function loadSummary() {
+            const cart = JSON.parse(localStorage.getItem('handskill_cart')) || [];
+            const container = document.getElementById('summary-items');
+            if (cart.length === 0) { window.location.href = 'products.html'; return; }
+
+            itemsTotal = 0;
+            container.innerHTML = cart.map(item => {
+                let p = parseInt(String(item.price).replace(/[₹, ]/g, '')) || 0;
+                itemsTotal += p;
+                return `<div class="flex gap-4 items-center">
+                    <img src="${item.img}" class="w-12 h-12 rounded-lg object-cover border" onerror="this.src='https://placehold.co/50x50?text=Item'">
+                    <div class="flex-1 text-sm font-medium">
+                        <p class="truncate">${item.name}</p>
+                        <p class="text-amber-600 font-bold">₹${p}</p>
+                    </div>
+                </div>`;
+            }).join('');
+
+            document.getElementById('sub-total').innerText = "₹" + itemsTotal;
+            updateTotal();
+        }
+
+        function updateTotal() {
+            const final = itemsTotal + deliveryCharge;
+            document.getElementById('final-total').innerText = "₹" + final;
+        }
+
+        function selectPayment(mode) {
+            selectedMode = mode;
+            document.querySelectorAll('.payment-option').forEach(el => el.classList.remove('active'));
+            document.getElementById('dot-online').classList.add('hidden');
+            document.getElementById('dot-cod').classList.add('hidden');
+            document.getElementById('qr-content').classList.remove('show');
+
+            if(mode === 'online') {
+                document.getElementById('opt-online').classList.add('active');
+                document.getElementById('dot-online').classList.remove('hidden');
+                document.getElementById('qr-content').classList.add('show');
+            } else {
+                document.getElementById('opt-cod').classList.add('active');
+                document.getElementById('dot-cod').classList.remove('hidden');
+            }
+        }
+
+        function payViaApp() {
+            const final = itemsTotal + deliveryCharge;
+            const upiUrl = `upi://pay?pa=${upiID}&pn=HandSkill&am=${final}&cu=INR&tn=Order_HandSkill`;
+            window.location.href = upiUrl;
+        }
+
+        function processOrder() {
+            const name = document.getElementById('custName').value.trim();
+            const phone = document.getElementById('custPhone').value.trim();
+            const city = document.getElementById('custCity').value.trim();
+            const address = document.getElementById('custAddress').value.trim();
+
+            if (!name || !phone || !address || !city) { showAlert("Please fill all details! ✍️"); return; }
+            if (!selectedMode) { showAlert("Select Payment Method! 💳"); return; }
+            
+            // Online Payment Validation
+            if (selectedMode === 'online' && !document.getElementById('paymentDone').checked) {
+                showAlert("Please complete payment & check the box! ⚠️");
+                return;
+            }
+
+            const orderID = "HS" + Math.floor(100000 + Math.random() * 900000);
+            document.getElementById('order-id-display').innerText = "#" + orderID;
+
+            // Success Animation & Voice
+            document.getElementById('success-overlay').style.display = 'flex';
+            if ('speechSynthesis' in window) {
+                const msg = new SpeechSynthesisUtterance("Order Successful! Thank you for shopping with HandSkill.");
+                window.speechSynthesis.speak(msg);
+            }
+
+            const cart = JSON.parse(localStorage.getItem('handskill_cart')) || [];
+            const itemsList = cart.map(item => `• ${item.name} (₹${item.price})`).join('\n');
+            const total = itemsTotal + deliveryCharge;
+            
+            const message = `*NEW ORDER ALERT* ✨\n\n*Order ID:* #${orderID}\n*Customer:* ${name}\n*Phone:* ${phone}\n*City:* ${city}\n*Address:* ${address}\n\n*Items Ordered:*\n${itemsList}\n\n*Summary:*\nSubtotal: ₹${itemsTotal}\nDelivery: ${deliveryCharge === 0 ? 'FREE' : '₹' + deliveryCharge}\n*Total Bill: ₹${total}*\n\n*Payment Mode:* ${selectedMode.toUpperCase()}\n${selectedMode === 'online' ? '✅ _Payment Proof Attached below_' : '🚚 _Will pay on delivery_'}\n\nConfirming my order! 🙏`;
+
+            const whatsappLink = `https://wa.me/919569806511?text=${encodeURIComponent(message)}`;
+            
+            setTimeout(() => {
+                window.location.href = whatsappLink;
+                localStorage.removeItem('handskill_cart');
+            }, 3000);
+        }
+
+        window.onload = loadSummary;
+    </script>
+</body>
+</html>
